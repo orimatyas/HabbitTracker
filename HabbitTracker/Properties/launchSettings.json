@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HabbitTracker": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Users\\orima\\source\\repos\\HabbitTracker"
+    }
+  }
+}
