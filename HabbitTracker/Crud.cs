@@ -9,9 +9,6 @@ namespace HabbitTracker
 {
     internal class Crud
     {
-
-        internal static string connectionString = @"Data Source = habit-logger.db";
-
         internal static void AddRecord()
         {
             DateTime today = DateTime.Today;
@@ -21,12 +18,12 @@ namespace HabbitTracker
             {
                 return;
             }
-            using (var connection = new SqliteConnection(connectionString))
+            using (var connection = new SqliteConnection(Helper.connectionString))
             {
                 connection.Open();
                 using (var tableCmd = connection.CreateCommand())
                 {
-                    tableCmd.CommandText = @$"INSERT INTO drinking_water(date, quantity) VALUES('{date}', {quantity})";
+                    tableCmd.CommandText = @$"INSERT INTO all_habits(date, quantity) VALUES('{date}', {quantity})";
                     tableCmd.ExecuteNonQuery();
                 }
             }
@@ -36,25 +33,26 @@ namespace HabbitTracker
         {
             Console.Clear();
             SQLitePCL.Batteries.Init();
-            using (var connection = new SqliteConnection(connectionString))
+            using (var connection = new SqliteConnection(Helper.connectionString))
             {
                 connection.Open();
                 using (var tableCmd = connection.CreateCommand())
                 {
-                    tableCmd.CommandText = @$"SELECT * FROM drinking_water";
+                    tableCmd.CommandText = @$"SELECT * FROM all_habits";
                     tableCmd.ExecuteNonQuery();
-                    List<DrinkingWater> tableData = new();
+                    List<HabitRecord> tableData = new();
                     SqliteDataReader reader = tableCmd.ExecuteReader();
                     if (reader.HasRows)
                     {
                         while (reader.Read())
                         {
                             tableData.Add(
-                                new DrinkingWater
+                                new HabitRecord
                                 {
-                                    Id = reader.GetInt32(0),
+                                    RecordId = reader.GetInt32(0),
                                     Date = reader.GetDateTime(1),
-                                    Quantity = reader.GetInt32(2)
+                                    HabitId = reader.GetInt32(2),
+                                    Quantity = reader.GetInt32(3),
                                 });
                         }
                     }
@@ -63,10 +61,10 @@ namespace HabbitTracker
                         Console.WriteLine("No rows found.");
                     }
                     Console.WriteLine("----------");
-                    foreach (var dw in tableData)
+                    foreach (var h in tableData)
                     {
-                        string formattedDate = dw.Date.ToString("dd-MM-yyyy");
-                        Console.WriteLine($"{dw.Id} - {formattedDate} - Quantity: {dw.Quantity}");
+                        string formattedDate = h.Date.ToString("dd-MM-yyyy");
+                        Console.WriteLine($"{h.RecordId} - {formattedDate} - {h.HabitId} - Quantity: {h.Quantity}");
                     }
                     Console.WriteLine("----------");
                 }
@@ -87,12 +85,12 @@ namespace HabbitTracker
             {
                 return;
             }
-            using (var connection = new SqliteConnection(connectionString))
+            using (var connection = new SqliteConnection(Helper.connectionString))
             {
                 connection.Open();
                 using (var tableCmd = connection.CreateCommand())
                 {
-                    tableCmd.CommandText = @$"UPDATE drinking_water SET date = '{date}', quantity = {quantity} WHERE Id = {idNumber}";
+                    tableCmd.CommandText = @$"UPDATE all_habits SET date = '{date}', quantity = {quantity} WHERE Id = {idNumber}";
                     int rowCount = tableCmd.ExecuteNonQuery();
                     if (rowCount == 0)
                     {
@@ -117,12 +115,12 @@ namespace HabbitTracker
             {
                 return;
             }
-            using (var connection = new SqliteConnection(connectionString))
+            using (var connection = new SqliteConnection(Helper.connectionString))
             {
                 connection.Open();
                 using (var tableCmd = connection.CreateCommand())
                 {
-                    tableCmd.CommandText = $@"DELETE FROM drinking_water WHERE Id = {recordID}";
+                    tableCmd.CommandText = $@"DELETE FROM all_habits WHERE Id = {recordID}";
                     int rowCount = tableCmd.ExecuteNonQuery();
                     if (rowCount == 0)
                     {

@@ -10,19 +10,15 @@ namespace HabbitTracker
 
         static void Main(string[] args)
         {
-            SQLitePCL.Batteries.Init();
-            using (var connection = new SqliteConnection(Crud.connectionString))
-            {
-                connection.Open();
-                using (var tableCmd = connection.CreateCommand())
-                {
-                    tableCmd.CommandText = @"CREATE TABLE IF NOT EXISTS drinking_water (
-Id INTEGER PRIMARY KEY AUTOINCREMENT,
-Date TEXT,
-Quantity INTEGER);";
-                    tableCmd.ExecuteNonQuery();
-                }
-            }
+            Helper.CreateDB(@"CREATE TABLE IF NOT EXISTS all_habits (
+habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
+name TEXT,
+unit TEXT);");
+            Helper.CreateDB(@"CREATE TABLE IF NOT EXISTS habit_records (
+record_id INTEGER PRIMARY KEY AUTOINCREMENT,
+habit_id INTEGER ,
+date TEXT,
+quantity INTEGER);");
             Helper.ShowMenu();
         }
     }
