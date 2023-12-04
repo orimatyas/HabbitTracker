@@ -10,11 +10,11 @@ namespace HabbitTracker
 
         static void Main(string[] args)
         {
-            Helper.CreateDB(@"CREATE TABLE IF NOT EXISTS all_habits (
+            CreateOperations.CreateDB(@"CREATE TABLE IF NOT EXISTS all_habits (
 habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
 name TEXT,
 unit TEXT);");
-            Helper.CreateDB(@"CREATE TABLE IF NOT EXISTS habit_records (
+            CreateOperations.CreateDB(@"CREATE TABLE IF NOT EXISTS habit_records (
 record_id INTEGER PRIMARY KEY AUTOINCREMENT,
 habit_id INTEGER ,
 date TEXT,

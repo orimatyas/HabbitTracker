@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HabbitTracker
+namespace HabbitTracker.Model
 {
     internal class HabitRecord
 
