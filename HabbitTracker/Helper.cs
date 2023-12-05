@@ -148,15 +148,15 @@ X - Back to Main Menu
             {
                 Console.WriteLine(@"--Reports Options--
 
-M - Make a report
+H - Create habit report
 X - Back to Main Menu
 -----------------");
 
                 string consoleInput = Console.ReadLine().Trim().ToLower();
                 switch (consoleInput)
                 {
-                    case "m":
-                        Report.CreateReport();
+                    case "h":
+                        Report.HabitReport();
                         break;
                     case "x":
                         Console.Clear();
