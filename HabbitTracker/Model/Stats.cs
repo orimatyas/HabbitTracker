@@ -10,7 +10,7 @@ namespace HabbitTracker.Model
     {
         public int MaxQuantity { get; set; }
         public int MinQuantity { get; set; }
-        public int AvgQuantity { get; set; }
+        public float AvgQuantity { get; set; }
         public int TotalQuantity { get; set; }
         public int RecordCount { get; set; }
         public string Unit {  get; set; }

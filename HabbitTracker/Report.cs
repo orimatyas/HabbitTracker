@@ -14,8 +14,7 @@ namespace HabbitTracker
     {
         public static void HabitReport()
         {
-            List<RecordsJoined> habitData = new List<RecordsJoined>();
-            List<Stats> statsData = new List<Stats>();
+            StringBuilder habitBuilder = new StringBuilder();
             ReadOperations.ViewRecords();
             Console.WriteLine("Enter the name of the habit:");
             string selectedHabit = Console.ReadLine();
@@ -39,13 +38,13 @@ INNER JOIN all_habits ah ON hr.habit_id = ah.habit_id
 WHERE ah.name = '{selectedHabit}'
 AND hr.date BETWEEN '{fromDate}' AND '{toDate}'";
                         tableCmd.ExecuteNonQuery();
-                        List<RecordsJoined> tableData = new();
+                        List<RecordsJoined> habitData = new();
                         SqliteDataReader reader = tableCmd.ExecuteReader();
                         if (reader.HasRows)
                         {
                             while (reader.Read())
                             {
-                                tableData.Add(
+                                habitData.Add(
                                     new RecordsJoined
                                     {
                                         RecordId = reader.GetInt32(0),
@@ -60,27 +59,28 @@ AND hr.date BETWEEN '{fromDate}' AND '{toDate}'";
                         {
                             Console.WriteLine("No rows found.");
                         }
-                        Console.WriteLine("----------");
-                        foreach (var record in tableData)
+                        habitBuilder.AppendLine("----------");
+                        foreach (var record in habitData)
                         {
                             string formattedDate = record.Date.ToString("yyyy-MM-dd");
-                            Console.WriteLine($"{record.RecordId} - {formattedDate} - {record.Name} - {record.Quantity} {record.Unit}");
+                            habitBuilder.AppendLine($"{record.RecordId} - {formattedDate} - {record.Name} - {record.Quantity} {record.Unit}");
                         }
-                        Console.WriteLine("----------");
+                        habitBuilder.AppendLine("----------");
                     }
                 }
-                statsData = GetHabitStats(selectedHabit, fromDate, toDate);
-                SaveReportToFile(habitData, statsData, selectedHabit, fromDate, toDate);
             }
             else
             {
                 Console.WriteLine("Report cancelled...");
             }
-            
+            Console.WriteLine(habitBuilder.ToString());
+            string habitOutput = habitBuilder.ToString();
+            string statOutput = GetHabitStats(selectedHabit, fromDate, toDate);
+            SaveReportToFile(habitOutput, statOutput);
         }
-        public static List<Stats> GetHabitStats(string selectedHabit, string fromDate, string toDate)
+        public static string GetHabitStats(string selectedHabit, string fromDate, string toDate)
         {
-            List<Stats> statsData = new List<Stats>();
+            StringBuilder statBuilder = new StringBuilder();
             if (Helper.GetUserConfirmation("Do you want detailed stats? (yes/no)"))
             {
                 SQLitePCL.Batteries.Init();
@@ -99,14 +99,13 @@ FROM habit_records hr
 INNER JOIN all_habits ah ON hr.habit_id = ah.habit_id
 WHERE ah.name = '{selectedHabit}'
 AND hr.date BETWEEN '{fromDate}' AND '{toDate}'";
-                        tableCmd.ExecuteNonQuery();
-                        List<Stats> tableData = new();
+                        List<Stats> statsData = new();
                         SqliteDataReader statsReader = tableCmd.ExecuteReader();
                         if (statsReader.HasRows)
                         {
                             while (statsReader.Read())
                             {
-                                tableData.Add(
+                                statsData.Add(
                                     new Stats
                                     {
                                         MaxQuantity = statsReader.GetInt32(0),
@@ -121,16 +120,16 @@ AND hr.date BETWEEN '{fromDate}' AND '{toDate}'";
                         {
                             Console.WriteLine("No rows found.");
                         }
-                        Console.WriteLine("----------");
-                        foreach (var record in tableData)
+                        statBuilder.AppendLine("----------");
+                        foreach (var record in statsData)
                         {
-                            Console.WriteLine(@$"-{selectedHabit} between {fromDate} and {toDate}-
+                            statBuilder.AppendLine(@$"-{selectedHabit} between {fromDate} and {toDate}-
 Maximum amount of {selectedHabit}: {record.MaxQuantity} {record.Unit}
 Minimum amount of {selectedHabit}: {record.MinQuantity} {record.Unit}
 Average amount of {selectedHabit}: {record.AvgQuantity:F2} {record.Unit}
 Total amount of {selectedHabit}: {record.TotalQuantity} {record.Unit}");
                         }
-                        Console.WriteLine("----------");
+                        statBuilder.AppendLine("----------");
                     }
                 }
             }
@@ -138,28 +137,18 @@ Total amount of {selectedHabit}: {record.TotalQuantity} {record.Unit}");
             {
                 Console.WriteLine("Report cancelled...");
             }
-            return statsData;
+            Console.WriteLine(statBuilder.ToString());
+            return statBuilder.ToString();
         }
-        private static void SaveReportToFile(List<RecordsJoined> habitData, List<Stats> statsData, string selectedHabit, string fromDate, string toDate)
+        private static void SaveReportToFile(string habitOutput, string statOutput)
         {
             if (Helper.GetUserConfirmation("Do you want to save the report? (yes/no)"))
             {
                 Console.WriteLine("Enter the filename:");
                 string filename = Console.ReadLine();
                 StringBuilder sb = new StringBuilder();
-                foreach (var record in habitData)
-                {
-                    string formattedDate = record.Date.ToString("yyyy-MM-dd");
-                    sb.AppendLine($"{record.RecordId} - {formattedDate} - {record.Name} - {record.Quantity} {record.Unit}");
-                }
-                foreach (var record in statsData)
-                {
-                    sb.AppendLine(@$"-{selectedHabit} between {fromDate} and {toDate}-
-Maximum amount of {selectedHabit}: {record.MaxQuantity} {record.Unit}
-Minimum amount of {selectedHabit}: {record.MinQuantity} {record.Unit}
-Average amount of {selectedHabit}: {record.AvgQuantity:F2} {record.Unit}
-Total amount of {selectedHabit}: {record.TotalQuantity} {record.Unit}");
-                }
+                sb.AppendLine(habitOutput);
+                sb.AppendLine(statOutput);
                 File.WriteAllText(filename, sb.ToString());
                 Console.WriteLine($"Report saved to {filename}");
             }
